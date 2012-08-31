@@ -1,0 +1,99 @@
+# encoding: utf-8
+#!/usr/bin/env ruby
+#
+#
+#
+
+STDOUT.sync = true
+
+$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), *%w[.. lib]))
+
+require 'bundler'
+ENV["BUNDLE_GEMFILE"] = File.expand_path("../../Gemfile", __FILE__)
+Bundler.require 
+require 'main'
+require 'fire_engine'
+
+#fire quickblog up --orgrepo=master --blogname=coffeeinthevein --tag=test
+
+Main {
+
+  def run
+   puts 'Please, be more specific!'
+  end
+  
+  #TODO Move it to repos mode
+  mode 'init' do
+    option('name'){
+      argument :required
+    }
+    def run
+      name = params['name'].value
+      return unless name
+      puts FireEngine.init(name)
+    end
+  end
+
+
+  mode 'quickblog' do
+    argument 'up'
+ 
+    option('orgrepo') { argument :optional }
+    option('blogname') { argument :optional }
+    option('blogpath') { argument :optional }
+    option('tag')     { argument :optional }
+    def run
+      repo_name = params['orgrepo'].value
+      blog_name = params['blogname'].value
+      blog_path = params['blogpath'].value
+      tag       = params['tag'].value
+      FireEngine.quickblog(tag,repo_name,blog_name)
+    end
+  end
+
+  mode 'blog' do
+    argument 'register'
+    option('orgrepo') { argument :optional }
+    option('blogname') { argument :optional }
+    option('blogpath') { argument :optional }
+    option('tag')     { argument :optional }
+
+    def run
+      repo_name = params['orgrepo'].value
+      blog_name = params['blogname'].value
+      blog_path = params['blogpath'].value
+      tag       = params['tag'].value
+      #if params['quickblog'].value
+        #FireEngine.quickblog(tag,repo_name,blog_name)
+        #return
+      #end
+      puts FireEngine.register_blog_for_repo(repo_name,blog_name,blog_path)
+    end
+
+  end
+
+  mode 'repo' do
+    argument 'list'
+
+    def run
+      if params['list'].value
+        pp FireEngine.available_repos
+      end
+    end
+
+  end
+
+  mode 'installgems' do
+    def run
+    `sudo ln -s /Users/fullofcaffeine/workspace/code/fireengine/bin/fire_devenv_wrapper /usr/bin/fire`
+    end
+  end
+
+  mode 'editgems' do
+    def run
+    `vi /Users/fullofcaffeine/workspace/code/fireengine/Gemfile`
+    end
+  end
+
+
+}
